@@ -1,90 +1,76 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KING SCANNER</title>
+<title>KING SCANNER V11</title>
 <style>
-body{background:#000;color:#fff;font-family:monospace;margin:0;padding:15px}
-#login{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99}
-input{background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:10px;width:90%;max-width:300px;margin:8px}
-button{background:#fff;color:#000;padding:14px 28px;border:none;border-radius:12px;font-weight:bold}
-.box{border:2px dashed #444;padding:25px;border-radius:16px;text-align:center;background:#0a0a0a;margin:15px 0}
-#log{background:#111;padding:10px;border-radius:10px;font-size:11px;color:#888;white-space:pre-wrap}
-.item{background:#111;padding:12px;margin:8px 0;border-radius:10px;border-left:4px solid #333;text-align:left}
-.bad{border-left-color:#ff0040}.ok{border-left-color:#00ff88}
-#btnStart{background:#00ff88;color:#000;display:none;width:100%;padding:18px;margin-top:12px;font-size:16px}
-#barWrap{height:6px;background:#222;border-radius:10px;margin:10px 0;overflow:hidden}
-#bar{height:100%;width:0%;background:#00ff88}
+body{margin:0;background:#000;color:#fff;font-family:monospace;padding:14px}
+.card{background:#0f0f0f;border:1px solid #222;border-radius:18px;padding:16px}
+.box{border:2px dashed #333;border-radius:16px;padding:20px;text-align:center;background:#0a0a0a}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:800;margin-top:10px}
+.btn1{background:#fff;color:#000}
+.btn2{background:#00ff88;color:#000;display:none}
+#bar{height:8px;background:#222;border-radius:99px;overflow:hidden;margin:12px 0}
+#bar div{height:100%;width:0%;background:#00ff88;transition:.2s}
 </style>
 </head>
-<body>
-<div id="login">
-<h1>👑 KING SCANNER</h1>
-<input id="u" placeholder="Usuário"><input id="p" type="password" placeholder="Senha">
-<button onclick="if(u.value=='king'&&p.value=='1234'){login.style.display='none';app.style.display='block'}else alert('king / 1234')">ENTRAR</button>
-</div>
-<div id="app" style="display:none">
-<h1 style="text-align:center">👑 KING SCANNER</h1>
+<body style="max-width:480px;margin:0 auto">
+<h2 style="text-align:center">👑 KING SCANNER V11</h2>
+<div class="card">
 <div class="box">
-<div id="fn" style="color:#00ff88;font-size:11px;word-break:break-all">Nenhum arquivo</div>
+<div id="fn" style="color:#00ff88;font-size:11px">Nenhum arquivo</div>
 <input type="file" id="fi" accept=".tar.gz,.gz" hidden>
-<button onclick="fi.click()">📁 SELECIONAR ARQUIVO</button>
-<button id="btnStart" onclick="go()">🚀 COMEÇAR ANÁLISE</button>
-<div id="barWrap"><div id="bar"></div></div>
+<button class="btn btn1" onclick="fi.click()">📁 SELECIONAR SYS</button>
+<button id="go" class="btn btn2" onclick="scan()">🚀 COMEÇAR ANÁLISE</button>
+<div id="bar"><div id="p"></div></div>
+<div id="log" style="font-size:11px;color:#666">Aguardando arquivo...</div>
 </div>
-<div id="log">Aguardando arquivo...</div>
-<div id="res"></div>
 </div>
-<script>
-let file=null, fi=document.getElementById('fi'), fn=document.getElementById('fn'), btn=document.getElementById('btnStart'), log=document.getElementById('log'), res=document.getElementById('res'), bar=document.getElementById('bar');
-fi.onchange=e=>{file=e.target.files[0]; if(file){fn.innerText=`✅ ${file.name} ${(file.size/1024/1024).toFixed(1)}MB`; btn.style.display='block'; log.innerText='Pronto! Clique COMEÇAR';}};
-async function go(){
- if(!file) return; btn.disabled=true; btn.innerText='⏳ ANALISANDO...'; res.innerHTML=''; bar.style.width='0%';
- let total=0, det=[]; let hostsFileFound=false; let hostsContent='';
- try{
-  const reader=file.stream().pipeThrough(new DecompressionStream('gzip')).getReader();
-  const dec=new TextDecoder(); let resto='';
-  while(true){
-   const {value,done}=await reader.read(); if(done) break;
-   total+=value.length;
-   let chunk=resto+dec.decode(value,{stream:true});
-   let low=chunk.toLowerCase();
-   // PEGA SÓ O CONTEUDO DO ARQUIVO HOSTS
-   if(low.includes('private/etc/hosts')){
-      hostsFileFound=true;
-      // pega os proximos 5000 chars que é o arquivo hosts de verdade
-      let idx=low.indexOf('private/etc/hosts');
-      hostsContent+=low.substring(idx, idx+5000);
-   }
-   resto=chunk.slice(-500);
-   if(total% (5*1024*1024) < 1024){ bar.style.width=Math.min(95,(total/(50*1024*1024))*100)+'%'; log.innerText=`Analisando... ${(total/1024/1024).toFixed(1)}MB`; await new Promise(r=>setTimeout(r,5));}
-   if(total>100*1024*1024) break;
-  }
-  bar.style.width='100%';
-  // AGORA ANALISA SÓ DENTRO DO HOSTS
-  if(hostsFileFound){
-    if(hostsContent.includes('freefire')||hostsContent.includes('garena')||hostsContent.includes('ff.garena')||hostsContent.includes('anticheat')){
-        det.push({n:'XIT HOSTS - FREE FIRE', f:'private/etc/hosts'});
-    } else {
-        let count=(hostsContent.match(/0\.0\.0\.0/g)||[]).length;
-        if(count>15) det.push({n:`XIT HOSTS - ${count} BLOQUEIOS`, f:'private/etc/hosts'});
-    }
-  }
-  // JAILBREAK - TEM QUE SER APP DE VERDADE
-  // removido detecção de SURGE generica pra não dar falso
-  // só detecta se tiver bundle id de verdade
-  let all=hostsContent; // a gente ja leu parte
-  // pra jailbreak precisa ver se tem no tar o caminho Applications/Cydia.app
-  if(all.includes('/applications/cydia.app')||all.includes('com.saurik.cydia')) det.push({n:'JAILBREAK CYDIA', f:'Applications'});
+<div id="res" style="margin-top:12px"></div>
 
-  let sujo=det.length>0;
-  res.innerHTML=`<h2 style="background:${sujo?'#ff0040':'#00ff88'};color:#000;padding:14px;border-radius:10px;text-align:center">${sujo?'❌ SUJO':'✅ LIMPO'}</h2>`;
-  if(!sujo) res.innerHTML+=`<div class="item ok">✅ APARELHO LIMPO<br><small>Sys limpa, sem hosts de xit</small></div>`;
-  else det.forEach(d=>res.innerHTML+=`<div class="item bad">❌ ${d.n}<br><small>Em: ${d.f}</small></div>`);
-  log.innerText=`✅ Finalizado - ${(total/1024/1024).toFixed(1)}MB lidos`;
- }catch(e){log.innerText=`❌ Erro: ${e.message}`;}
- btn.disabled=false; btn.innerText='🚀 COMEÇAR ANÁLISE';
+<script>
+let file=null,hosts='';
+fi.onchange=e=>{
+ file=e.target.files[0];
+ if(file){
+  fn.textContent=file.name+' '+(file.size/1024/1024).toFixed(1)+'MB';
+  go.style.display='block';
+  log.textContent='Pronto! Clique em COMEÇAR';
+ }
+};
+
+async function scan(){
+ if(!file) return;
+ go.disabled=true; go.textContent='⏳ ANALISANDO...'; res.innerHTML=''; hosts='';
+ const reader=file.stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+ const dec=new TextDecoder(); let carry=''; let total=0;
+ while(true){
+  const {value,done}=await reader.read(); if(done) break;
+  total+=value.length;
+  let chunk=carry+dec.decode(value,{stream:true});
+  let low=chunk.toLowerCase();
+  if(low.includes('private/etc/hosts')){
+   hosts+=low.slice(low.indexOf('private/etc/hosts'), low.indexOf('private/etc/hosts')+7000);
+  }
+  carry=chunk.slice(-300);
+  p.style.width=Math.min(99,total/file.size*100)+'%';
+  if(total>120*1024*1024) break;
+ }
+ p.style.width='100%';
+ let det=[];
+ if(hosts.includes('freefire')||hosts.includes('garena')||hosts.includes('anticheat')){
+  det.push('XIT HOSTS - FREE FIRE');
+ }else{
+  let c=(hosts.match(/0\.0\.0\.0/g)||[]).length;
+  if(c>20) det.push('XIT HOSTS - '+c+' BLOQUEIOS');
+ }
+ let sujo=det.length>0;
+ res.innerHTML=`<div style="padding:14px;border-radius:12px;text-align:center;font-weight:900;background:${sujo?'#ff0040':'#00ff88'};color:#000">${sujo?'❌ SUJO':'✅ LIMPO'}</div>`+
+ (sujo?det.map(d=>`<div style="background:#111;border:1px solid #222;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #ff0040">❌ ${d}</div>`).join(''):`<div style="background:#111;border:1px solid #222;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #00ff88">✅ APARELHO LIMPO - SEM XIT</div>`);
+ log.textContent='Finalizado '+(total/1024/1024).toFixed(1)+'MB';
+ go.disabled=false; go.textContent='🚀 COMEÇAR ANÁLISE';
 }
 </script>
 </body>
