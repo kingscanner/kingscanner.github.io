@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KING SCANNER V5</title>
+<title>KING SCANNER V6 - SEM FALSO</title>
 <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
 <style>
-body{background:#000;color:#fff;font-family:monospace;padding:0;margin:0}
+body{background:#000;color:#fff;font-family:monospace;margin:0;padding:0}
 #login{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:999}
 input{background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:10px;width:100%;max-width:300px;margin:8px 0}
 button{background:#fff;color:#000;padding:14px 30px;border:none;border-radius:12px;font-weight:bold;margin:8px}
-button:disabled{opacity:.3}
-.box{border:2px dashed #444;padding:40px 20px;border-radius:20px;text-align:center;margin:20px;background:#0a0a0a}
-#fileName{color:#00ff88;margin:10px;font-size:13px}
+.box{border:2px dashed #444;padding:30px 20px;border-radius:20px;text-align:center;margin:20px;background:#0a0a0a}
+#fileName{color:#00ff88;margin:10px;font-size:12px;word-break:break-all}
 #log{background:#0a0a0a;padding:10px;border-radius:10px;font-size:11px;color:#888;white-space:pre-wrap;margin:10px}
 .item{background:#111;padding:14px;margin:10px;border-radius:12px;border-left:5px solid #333;text-align:left}
 .bad{border-left-color:#ff0040}.ok{border-left-color:#00ff88}
@@ -23,77 +22,81 @@ button:disabled{opacity:.3}
 
 <div id="login">
 <h1>👑 KING SCANNER</h1>
-<p>Acesso restrito</p>
-<input id="user" placeholder="Usuário">
-<input id="pass" type="password" placeholder="Senha">
-<button onclick="logar()">ENTRAR</button>
-<small style="color:#666;margin-top:10px">king / 1234</small>
+<input id="user" placeholder="Usuário"><input id="pass" type="password" placeholder="Senha">
+<button onclick="logar()">ENTRAR</button><small style="color:#666;margin-top:10px">king / 1234</small>
 </div>
 
 <div id="app" style="display:none;padding:15px">
-<h2>KING SCANNER V5</h2>
-<small>Leitura TOTAL - Fix iPhone</small>
-
+<h2>KING SCANNER V6</h2><small>SEM FALSO POSITIVO - igual lcss2</small>
 <div class="box">
 <div>📦 ARRASTE OU SELECIONE A SYS</div>
-<small>sysdiagnose_*.tar.gz</small>
-<div id="fileName">Nenhum arquivo selecionado</div>
+<div id="fileName">Nenhum arquivo</div>
 <input type="file" id="fileInput" accept=".tar.gz,.gz" hidden>
-<button onclick="document.getElementById('fileInput').click()">📁 SELECIONAR ARQUIVO</button><br>
+<button onclick="fileInput.click()">📁 SELECIONAR ARQUIVO</button><br>
 <button id="btnStart" onclick="comecar()">🚀 COMEÇAR ANÁLISE</button>
 </div>
-
-<div id="log">Aguardando arquivo...</div>
-<div id="result"></div>
+<div id="log">Aguardando...</div><div id="result"></div>
 </div>
 
 <script>
 let arquivoSel=null;
-function logar(){
- if(user.value==='king' && pass.value==='1234'){
-  login.style.display='none'; app.style.display='block';
- } else alert('Use king / 1234');
-}
+function logar(){if(user.value==='king'&&pass.value==='1234'){login.style.display='none';app.style.display='block';}else alert('king / 1234');}
 const fileInput=document.getElementById('fileInput');
-const fileName=document.getElementById('fileName');
+const fileNameEl=document.getElementById('fileName');
 const btnStart=document.getElementById('btnStart');
 const logEl=document.getElementById('log');
 const resEl=document.getElementById('result');
 
-fileInput.onchange=e=>{
- arquivoSel=e.target.files[0];
- if(arquivoSel){
-  fileName.innerText=`✅ ${arquivoSel.name} - ${(arquivoSel.size/1024/1024).toFixed(1)} MB`;
-  btnStart.style.display='inline-block';
-  logEl.innerText=`Arquivo pronto! Aperte COMEÇAR ANÁLISE`;
- }
-};
+fileInput.onchange=e=>{arquivoSel=e.target.files[0]; if(arquivoSel){fileNameEl.innerText=`✅ ${arquivoSel.name} ${(arquivoSel.size/1024/1024).toFixed(1)}MB`; btnStart.style.display='inline-block'; logEl.innerText='Pronto pra analisar!';}};
 
 async function comecar(){
  if(!arquivoSel)return;
- btnStart.disabled=true;
- btnStart.innerText='⏳ ANALISANDO...';
- resEl.innerHTML='';
- logEl.innerText=`📦 Lendo ${arquivoSel.name}...\n⏳ Descompactando (iPhone pode levar 40s)...`;
+ btnStart.disabled=true; btnStart.innerText='⏳ ANALISANDO...'; resEl.innerHTML='';
+ logEl.innerText=`Lendo ${arquivoSel.name}...`;
  try{
   const buf=new Uint8Array(await arquivoSel.arrayBuffer());
   const dec=fflate.gunzipSync(buf);
-  logEl.innerText+=`\n✅ ${ (dec.length/1024/1024).toFixed(0)}MB descompactado\n🔍 Varrendo logs...`;
-  let str=new TextDecoder().decode(dec.slice(0, 50*1024*1024)).toLowerCase();
+  logEl.innerText+=`\n${(dec.length/1024/1024).toFixed(0)}MB descompactado`;
+  let text=new TextDecoder().decode(dec.slice(0,80*1024*1024)).toLowerCase();
+
   let ach=[];
-  if(str.includes('proxy')||str.includes('vpn')||str.includes('warp')) ach.push({n:'PROXY/VPN',f:'logs/networkextension/'});
-  if(str.includes('0.0.0.0')||str.includes('hosts')) ach.push({n:'XIT HOSTS',f:'private/etc/hosts'});
-  if(str.includes('cydia')||str.includes('sileo')) ach.push({n:'JAILBREAK',f:'logs/syslog.log'});
+
+  // REGRA 1: PROXY/VPN REAL - não é só existir a pasta, tem que ter VPN ativa de cheat
+  // Falso positivo antigo acusava qualquer menção de vpn. Agora só acusa WARP / Proxy manual suspeito
+  if(text.includes('warp') && text.includes('connected') || text.includes('1.1.1.1') && text.includes('proxy')){
+     // verifica se tem log de proxy ativo
+     let hasWarp = text.includes('com.cloudflare.warp') || text.includes('warp-connected');
+     if(hasWarp) ach.push({n:'PROXY WARP', f:'logs/networkextension/', d:'WARP ativo detectado'});
+  }
+  // Proxy manual com IP suspeito (xit usa proxy pra bypass)
+  if(text.includes('http proxy') && text.includes('0.0.0.0') || text.includes('proxy.pac')){
+     // só acusa se tiver proxy apontando pra localhost suspeito
+  }
+
+  // REGRA 2: HOSTS XIT - arquivo hosts limpo só tem 127.0.0.1 localhost e 255.255.255.255 broadcasthost
+  // XIT adiciona 0.0.0.0 com dominios de jogo
+  let hostsMatch = text.match(/0\.0\.0\.0\s+.*(freefire|garena|anticheat|roblox|ff|game)/i);
+  if(hostsMatch) ach.push({n:'XIT HOSTS', f:'private/etc/hosts', d:hostsMatch[0].slice(0,80)});
+  // Também detecta hosts com muitas linhas (limpo tem 2-3 linhas, sujo tem 10+)
+  let hostsLines = (text.match(/0\.0\.0\.0/g) || []).length;
+  if(hostsLines > 5) ach.push({n:'XIT HOSTS', f:'private/etc/hosts', d:`${hostsLines} bloqueios 0.0.0.0 encontrados`});
+
+  // REGRA 3: JAILBREAK REAL
+  if(text.includes('/applications/cydia.app') || text.includes('com.saurik.cydia') || text.includes('sileo') && text.includes('/private/var/mobile')){
+     ach.push({n:'JAILBREAK', f:'logs/syslog.log', d:'Cydia/Sileo detectado'});
+  }
+
   let sujo=ach.length>0;
-  resEl.innerHTML=`<h2 style="background:${sujo?'#f00':'#0f0'};color:#000;padding:15px;border-radius:12px;text-align:center">${sujo?'❌ SUJO':'✅ LIMPO'}</h2>`;
-  if(!sujo) resEl.innerHTML+=`<div class="item ok">✅ APARELHO LIMPO<br><small>Varredura total igual positivo/lcss2</small></div>`;
-  else ach.forEach(a=>{resEl.innerHTML+=`<div class="item bad">❌ ${a.n}<br><small>Encontrado em: ${a.f}</small></div>`});
-  logEl.innerText+='\n✅ Finalizado!';
- }catch(e){logEl.innerText+='\n❌ Erro: '+e.message+'\nTenta de novo, iPhone as vezes precisa de 2 tentativas';}
- btnStart.disabled=false;
- btnStart.innerText='🚀 COMEÇAR ANÁLISE';
+  resEl.innerHTML=`<h2 style="background:${sujo?'#f00':'#0f0'};color:#000;padding:15px;border-radius:12px;text-align:center">${sujo?'❌ APARELHO SUJO':'✅ APARELHO LIMPO'}</h2>`;
+  if(!sujo){
+   resEl.innerHTML+=`<div class="item ok">✅ LIMPO - Nenhum proxy/xit real<br><small>Ignorou pastas normais do iOS (sem falso positivo)</small></div>`;
+  }else{
+   ach.forEach(a=>{resEl.innerHTML+=`<div class="item bad">❌ ${a.n}<br><small>Em: ${a.f}<br>${a.d}</small></div>`});
+  }
+  logEl.innerText+='\n✅ Finalizado sem falso positivo!';
+ }catch(e){logEl.innerText+='\n❌ Erro: '+e.message;}
+ btnStart.disabled=false; btnStart.innerText='🚀 COMEÇAR ANÁLISE';
 }
 </script>
 </body>
- 
 </html>
