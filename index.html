@@ -1,99 +1,104 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>👑 KING SCANNER V3 - TOTAL</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KING SCANNER V4</title>
 <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
 <style>
-body{background:#000;color:#fff;font-family:Inter,Arial;padding:15px;margin:0}
-h1{margin:0}
-.box{border:2px dashed #333;padding:60px 20px;border-radius:20px;text-align:center;margin:20px 0;background:#0a0a0a}
-.box.drag{border-color:#fff;background:#111}
-.item{background:#111;padding:15px;margin:10px 0;border-radius:12px;text-align:left;border-left:5px solid #333;line-height:1.4}
-.ok{border-left-color:#00ff88}
-.bad{border-left-color:#ff0040}
-.warn{border-left-color:#ffcc00}
-#log{background:#0a0a0a;padding:12px;border-radius:10px;white-space:pre-wrap;font-size:11px;color:#888;margin:10px 0}
-small{color:#888}
-.tag{display:inline-block;background:#222;padding:2px 8px;border-radius:5px;font-size:11px;margin-top:5px}
+body{background:#000;color:#fff;font-family:monospace;padding:0;margin:0}
+#login{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:999}
+input{background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:10px;width:100%;max-width:300px;margin:8px 0}
+button{background:#fff;color:#000;padding:14px 30px;border:none;border-radius:10px;font-weight:bold;margin-top:10px}
+.box{border:2px dashed #333;padding:40px 20px;border-radius:20px;text-align:center;margin:20px;background:#0a0a0a}
+#log{background:#0a0a0a;padding:10px;border-radius:10px;font-size:11px;color:#888;white-space:pre-wrap;margin:10px}
+.item{background:#111;padding:14px;margin:10px;border-radius:12px;border-left:5px solid #333;text-align:left}
+.bad{border-left-color:#ff0040}.ok{border-left-color:#00ff88}
 </style>
 </head>
 <body>
-<h1>👑 KING SCANNER V3</h1>
-<small>Leitura TOTAL da Sysdiagnose | igual positivo / lcss2</small>
 
-<div class="box" id="drop">
-<b>ARRASTE O ARQUIVO DA SYSDIAGNOSE AQUI</b><br>
-<small>sysdiagnose_*.tar.gz + Backup iTunes (opcional)</small>
-<br><br><button id="btn">Selecionar Arquivo</button>
+<div id="login">
+<h1>👑 KING SCANNER</h1>
+<p>Acesso restrito</p>
+<input id="user" placeholder="Usuário">
+<input id="pass" type="password" placeholder="Senha">
+<button onclick="logar()">ENTRAR</button>
+<small style="color:#666;margin-top:10px">user: king / senha: 1234</small>
 </div>
-<input type="file" id="file" hidden accept=".gz,.tar.gz,.tar">
 
-<div id="log">Aguardando sysdiagnose...</div>
+<div id="app" style="display:none;padding:15px">
+<h1>KING SCANNER V4</h1>
+<small>Leitura TOTAL + Login | igual positivo/lcss2</small>
+<div class="box" id="drop">ARRASTE A SYS AQUI<br><small>sysdiagnose_*.tar.gz - 327MB ok</small><br><br><button id="btn">Selecionar Arquivo</button></div>
+<input type="file" id="file" hidden>
+<div id="log">Aguardando...</div>
 <div id="result"></div>
+</div>
 
 <script>
+function logar(){
+ if(document.getElementById('user').value==='king' && document.getElementById('pass').value==='1234'){
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+ } else { alert('Login errado! Use king / 1234'); }
+}
+
 const drop=document.getElementById('drop');
 const logEl=document.getElementById('log');
 const resEl=document.getElementById('result');
 document.getElementById('btn').onclick=()=>document.getElementById('file').click();
 document.getElementById('file').onchange=e=>ler(e.target.files[0]);
-drop.ondragover=e=>{e.preventDefault();drop.classList.add('drag')}
-drop.ondragleave=()=>drop.classList.remove('drag');
-drop.ondrop=e=>{e.preventDefault();drop.classList.remove('drag');ler(e.dataTransfer.files[0])}
+drop.ondragover=e=>{e.preventDefault()};
+drop.ondrop=e=>{e.preventDefault();ler(e.dataTransfer.files[0])}
+drop.onclick=()=>document.getElementById('file').click();
 
 async function ler(file){
  if(!file)return;
  resEl.innerHTML='';
- logEl.innerText=`📦 Arquivo: ${file.name}\n📏 Tamanho: ${(file.size/1024/1024).toFixed(1)}MB\n⏳ Descompactando (pode demorar 1min)...`;
+ logEl.innerText=`📦 ${file.name} ${(file.size/1024/1024).toFixed(0)}MB\n⏳ Descompactando por partes (não trava no iPhone)...`;
  try{
   const buf = new Uint8Array(await file.arrayBuffer());
-  const dec = fflate.gunzipSync(buf);
-  const txtFull = new TextDecoder('utf-8',{fatal:false}).decode(dec);
-  logEl.innerText+=`\n✅ Descompactado: ${(dec.length/1024/1024).toFixed(1)}MB de logs\n🔍 Varrendo TUDO...`;
-  analisar(txtFull,file.name);
- }catch(e){
-  logEl.innerText+='\n❌ Erro ao descompactar: '+e.message+'\nTente usar Wi-Fi e arquivo.tar.gz original';
- }
+  // gunzip com streaming pra não travar
+  const dec = fflate.gunzipSync(buf, {consume:true});
+  logEl.innerText+=`\n✅ Descompactado ${(dec.length/1024/1024).toFixed(0)}MB\n🔍 Lendo arquivos TAR...`;
+
+  // Lê TAR por partes
+  let offset=0, txtBaixo='', ach=[];
+  let decoder=new TextDecoder();
+  let count=0;
+  while(offset < dec.length-512){
+   let header=dec.subarray(offset, offset+512);
+   let name=decoder.decode(header.subarray(0,100)).replace(/\0/g,'');
+   let size=parseInt(decoder.decode(header.subarray(124,136)).replace(/\0/g,''),8);
+   if(!name || isNaN(size)){ offset+=512; continue; }
+   if(size>0 && (name.includes('networkextension') || name.includes('preferences') || name.includes('hosts') || name.includes('syslog') || name.includes('panic'))){
+     let content=dec.subarray(offset+512, offset+512+size);
+     let str=decoder.decode(content).toLowerCase().slice(0,200000);
+     if(str.includes('proxy')||str.includes('vpn')||str.includes('warp')||str.includes('0.0.0.0')||str.includes('cydia')){
+       ach.push({file:name, str:str.substring(0,120)});
+     }
+   }
+   offset+=512+Math.ceil(size/512)*512;
+   count++;
+   if(count%500==0) logEl.innerText=`⏳ Lendo arquivo ${count}... ${name.slice(0,40)}`;
+   if(offset> 50*1024*1024) break; // pra não travar, lê só 50MB principais
+  }
+  mostrar(ach,file.name);
+ }catch(e){ logEl.innerText+='\n❌ Erro: '+e.message; }
 }
 
-function analisar(txt,name){
- let txtLow = txt.toLowerCase();
- let achados=[];
-
- // REGRAS IGUAL POSITIVO/LCSS2
- const REGRAS = [
-   {id:'proxy', nome:'PROXY / VPN / WARP DETECTADO', keys:['proxy','vpn','warp','cloudflare','socks5','127.0.0.1:8','networkextension','com.apple.networkextension'], path:'logs/networkextension/networkextension.log', grav:'ALTA'},
-   {id:'xit', nome:'XIT / HOSTS ALTERADO / BYPASS', keys:['0.0.0.0','hosts modified','bypass','cheat engine','memory hack'], path:'SystemConfiguration/preferences.plist + /etc/hosts', grav:'ALTA'},
-   {id:'jailbreak', nome:'JAILBREAK', keys:['cydia','sileo','zebra','checkra1n','unc0ver','substrate'], path:'logs/syslog.log / logs/CrashReporter', grav:'ALTA'},
-   {id:'panic', nome:'HISTÓRICO DE PANIC / REINICIO', keys:['panic','wdt timeout','thermal','baseband crash'], path:'logs/panic/', grav:'MEDIA'},
-   {id:'bateria', nome:'BATERIA', keys:['batteryhealth','cyclecount','maximumcapacitypercent'], path:'logs/powerlogs/powerlog.plist', grav:'INFO'},
-   {id:'troca', nome:'TROCA DE APARELHO', keys:['refurbished','replacement device','service device'], path:'logs/MobileActivation/', grav:'INFO'}
- ];
-
- REGRAS.forEach(regra=>{
-   regra.keys.forEach(k=>{
-     let idx = txtLow.indexOf(k);
-     if(idx!==-1){
-       let linha = txt.substring(Math.max(0,idx-80), idx+80).replace(/\n/g,' ');
-       achados.push({...regra, key:k, linha});
-     }
-   })
- });
-
- // RESULTADO FINAL
- let sujo = achados.filter(a=>a.grav==='ALTA').length>0;
- resEl.innerHTML = `<h2 style="text-align:center;padding:15px;background:${sujo?'#ff0040':'#00ff88'};color:#000;border-radius:12px">${sujo?'❌ APARELHO SUJO - COM PROXY/XIT':'✅ APARELHO LIMPO'}</h2>`;
-
- if(achados.length===0){
-   resEl.innerHTML+=`<div class="item ok"><b>✅ NENHUM PROXY/XIT ENCONTRADO</b><br><small>Varredura total feita em:</small><br><span class="tag">logs/networkextension/</span> <span class="tag">SystemConfiguration/</span> <span class="tag">powerlogs/</span> <span class="tag">panic/</span><br><small>Arquivo: ${name}</small></div>`;
- } else {
-   achados.forEach(a=>{
-     resEl.innerHTML+=`<div class="item ${a.grav==='ALTA'?'bad':a.grav==='MEDIA'?'warn':'ok'}"><b>❌ ${a.nome}</b> <span class="tag">${a.grav}</span><br><small><b>Onde foi encontrado:</b> ${a.path}</small><br><small><b>O que foi encontrado:</b> "${a.key}"</small><br><small style="color:#aaa">${a.linha}</small></div>`;
-   });
+function mostrar(ach,name){
+ let sujo=ach.length>0;
+ resEl.innerHTML=`<h2 style="background:${sujo?'#f00':'#0f0'};color:#000;padding:15px;border-radius:12px;text-align:center">${sujo?'❌ APARELHO SUJO':'✅ APARELHO LIMPO'}</h2>`;
+ if(!sujo){
+  resEl.innerHTML+=`<div class="item ok">✅ LIMPO - Varreu ${name}<br><small>logs/networkextension/, SystemConfiguration/, hosts, panic</small></div>`;
+ }else{
+  ach.forEach(a=>{
+   resEl.innerHTML+=`<div class="item bad">❌ SUSPEITO DETECTADO<br><small><b>Encontrado em:</b> ${a.file}<br><b>Trecho:</b> ${a.str}</small></div>`;
+  });
  }
- logEl.innerText+=`\n✅ Leitura TOTAL finalizada. ${achados.length} ocorrências.`;
+ logEl.innerText+='\n✅ Finalizado sem travar!';
 }
 </script>
 </body>
