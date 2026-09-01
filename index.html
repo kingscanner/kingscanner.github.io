@@ -19,13 +19,11 @@ button{background:#fff;color:#000;padding:14px 28px;border:none;border-radius:12
 </style>
 </head>
 <body>
-
 <div id="login">
 <h1>👑 KING SCANNER</h1>
 <input id="u" placeholder="Usuário"><input id="p" type="password" placeholder="Senha">
 <button onclick="if(u.value=='king'&&p.value=='1234'){login.style.display='none';app.style.display='block'}else alert('king / 1234')">ENTRAR</button>
 </div>
-
 <div id="app" style="display:none">
 <h1 style="text-align:center">👑 KING SCANNER</h1>
 <div class="box">
@@ -38,65 +36,53 @@ button{background:#fff;color:#000;padding:14px 28px;border:none;border-radius:12
 <div id="log">Aguardando arquivo...</div>
 <div id="res"></div>
 </div>
-
 <script>
 let file=null, fi=document.getElementById('fi'), fn=document.getElementById('fn'), btn=document.getElementById('btnStart'), log=document.getElementById('log'), res=document.getElementById('res'), bar=document.getElementById('bar');
 fi.onchange=e=>{file=e.target.files[0]; if(file){fn.innerText=`✅ ${file.name} ${(file.size/1024/1024).toFixed(1)}MB`; btn.style.display='block'; log.innerText='Pronto! Clique COMEÇAR';}};
-
 async function go(){
- if(!file) return;
- btn.disabled=true; btn.innerText='⏳ ANALISANDO...'; res.innerHTML=''; bar.style.width='0%';
- let total=0, det=[];
- let c000=0, hasWarp=false, hasShadow=false, hasSurge=false, hasCydia=false, hasSileo=false, hasSubstrate=false, hasGameHost=false, hasProxy=false;
-
+ if(!file) return; btn.disabled=true; btn.innerText='⏳ ANALISANDO...'; res.innerHTML=''; bar.style.width='0%';
+ let total=0, det=[]; let hostsFileFound=false; let hostsContent='';
  try{
   const reader=file.stream().pipeThrough(new DecompressionStream('gzip')).getReader();
   const dec=new TextDecoder(); let resto='';
-
   while(true){
    const {value,done}=await reader.read(); if(done) break;
    total+=value.length;
-   let low=(resto+dec.decode(value,{stream:true})).toLowerCase();
-
-   // HOSTS
-   let m=low.match(/0\.0\.0\.0/g); if(m) c000+=m.length;
-   if(low.includes('0.0.0.0') && (low.includes('freefire')||low.includes('garena')||low.includes('anticheat')||low.includes('ff.garena'))) hasGameHost=true;
-
-   // PROXY / VPN igual positivo
-   if(low.includes('shadowrocket')) hasShadow=true;
-   if(low.includes('surge') && low.includes('proxy')) hasSurge=true;
-   if(low.includes('com.cloudflare.warp') && low.includes('connected')) hasWarp=true;
-   if(low.includes('http proxy') && (low.includes('127.0.0.1:')||low.includes('0.0.0.0:'))) hasProxy=true;
-   if(low.includes('proxy.pac') || low.includes('proxy_auto_config')) hasProxy=true;
-
-   // JAILBREAK igual lcss2
-   if(low.includes('cydia.app') || low.includes('com.saurik.cydia')) hasCydia=true;
-   if(low.includes('sileo') && low.includes('/applications/')) hasSileo=true;
-   if(low.includes('mobilesubstrate') || low.includes('libsubstrate') || low.includes('ellekit') || low.includes('libhooker') || low.includes('choicy')) hasSubstrate=true;
-
-   resto=low.slice(-300);
-   if(total% (5*1024*1024) < 1024*1024){ bar.style.width=Math.min(95,(total/(50*1024*1024))*100)+'%'; log.innerText=`Analisando... ${(total/1024/1024).toFixed(1)}MB`; await new Promise(r=>setTimeout(r,5));}
+   let chunk=resto+dec.decode(value,{stream:true});
+   let low=chunk.toLowerCase();
+   // PEGA SÓ O CONTEUDO DO ARQUIVO HOSTS
+   if(low.includes('private/etc/hosts')){
+      hostsFileFound=true;
+      // pega os proximos 5000 chars que é o arquivo hosts de verdade
+      let idx=low.indexOf('private/etc/hosts');
+      hostsContent+=low.substring(idx, idx+5000);
+   }
+   resto=chunk.slice(-500);
+   if(total% (5*1024*1024) < 1024){ bar.style.width=Math.min(95,(total/(50*1024*1024))*100)+'%'; log.innerText=`Analisando... ${(total/1024/1024).toFixed(1)}MB`; await new Promise(r=>setTimeout(r,5));}
    if(total>100*1024*1024) break;
   }
-
   bar.style.width='100%';
-  if(hasGameHost) det.push({n:'XIT HOSTS - FREE FIRE', f:'private/etc/hosts'});
-  if(c000>10) det.push({n:`XIT HOSTS - ${c000} BLOQUEIOS`, f:'private/etc/hosts'});
-  if(hasShadow) det.push({n:'PROXY SHADOWROCKET', f:'config VPN'});
-  if(hasSurge) det.push({n:'PROXY SURGE', f:'config VPN'});
-  if(hasWarp) det.push({n:'PROXY WARP ATIVO', f:'networkextension'});
-  if(hasProxy) det.push({n:'PROXY MANUAL', f:'WiFi / PAC'});
-  if(hasCydia) det.push({n:'JAILBREAK CYDIA', f:'Applications'});
-  if(hasSileo) det.push({n:'JAILBREAK SILEO', f:'Applications'});
-  if(hasSubstrate) det.push({n:'TWEAK INJECT - SUBSTRATE/ELLEKIT', f:'Library/MobileSubstrate'});
+  // AGORA ANALISA SÓ DENTRO DO HOSTS
+  if(hostsFileFound){
+    if(hostsContent.includes('freefire')||hostsContent.includes('garena')||hostsContent.includes('ff.garena')||hostsContent.includes('anticheat')){
+        det.push({n:'XIT HOSTS - FREE FIRE', f:'private/etc/hosts'});
+    } else {
+        let count=(hostsContent.match(/0\.0\.0\.0/g)||[]).length;
+        if(count>15) det.push({n:`XIT HOSTS - ${count} BLOQUEIOS`, f:'private/etc/hosts'});
+    }
+  }
+  // JAILBREAK - TEM QUE SER APP DE VERDADE
+  // removido detecção de SURGE generica pra não dar falso
+  // só detecta se tiver bundle id de verdade
+  let all=hostsContent; // a gente ja leu parte
+  // pra jailbreak precisa ver se tem no tar o caminho Applications/Cydia.app
+  if(all.includes('/applications/cydia.app')||all.includes('com.saurik.cydia')) det.push({n:'JAILBREAK CYDIA', f:'Applications'});
 
   let sujo=det.length>0;
   res.innerHTML=`<h2 style="background:${sujo?'#ff0040':'#00ff88'};color:#000;padding:14px;border-radius:10px;text-align:center">${sujo?'❌ SUJO':'✅ LIMPO'}</h2>`;
-  if(!sujo) res.innerHTML+=`<div class="item ok">✅ APARELHO LIMPO<br><small>Nenhum xit/proxy/jailbreak encontrado</small></div>`;
+  if(!sujo) res.innerHTML+=`<div class="item ok">✅ APARELHO LIMPO<br><small>Sys limpa, sem hosts de xit</small></div>`;
   else det.forEach(d=>res.innerHTML+=`<div class="item bad">❌ ${d.n}<br><small>Em: ${d.f}</small></div>`);
-
   log.innerText=`✅ Finalizado - ${(total/1024/1024).toFixed(1)}MB lidos`;
-
  }catch(e){log.innerText=`❌ Erro: ${e.message}`;}
  btn.disabled=false; btn.innerText='🚀 COMEÇAR ANÁLISE';
 }
