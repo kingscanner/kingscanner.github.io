@@ -1,22 +1,31 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KING SCANNER V11</title>
+<title>KING V11</title>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:monospace;padding:14px}
+#login{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99;padding:20px}
+input{background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:12px;width:100%;max-width:320px;margin:6px}
 .card{background:#0f0f0f;border:1px solid #222;border-radius:18px;padding:16px}
 .box{border:2px dashed #333;border-radius:16px;padding:20px;text-align:center;background:#0a0a0a}
 .btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:800;margin-top:10px}
-.btn1{background:#fff;color:#000}
-.btn2{background:#00ff88;color:#000;display:none}
+.btn1{background:#fff;color:#000}.btn2{background:#00ff88;color:#000;display:none}
 #bar{height:8px;background:#222;border-radius:99px;overflow:hidden;margin:12px 0}
-#bar div{height:100%;width:0%;background:#00ff88;transition:.2s}
+#bar div{height:100%;width:0%;background:#00ff88}
 </style>
 </head>
-<body style="max-width:480px;margin:0 auto">
+<body>
+<div id="login">
+<h1>👑 KING SCANNER</h1>
+<p style="color:#888;font-size:12px">Login: king / Senha: 1234</p>
+<input id="u" placeholder="Usuário">
+<input id="p2" type="password" placeholder="Senha">
+<button class="btn btn1" style="max-width:320px" onclick="if(u.value=='king'&&p2.value=='1234'){login.style.display='none';app.style.display='block'}else alert('Errado! king / 1234')">ENTRAR</button>
+</div>
+
+<div id="app" style="display:none;max-width:480px;margin:0 auto">
 <h2 style="text-align:center">👑 KING SCANNER V11</h2>
 <div class="card">
 <div class="box">
@@ -24,53 +33,30 @@ body{margin:0;background:#000;color:#fff;font-family:monospace;padding:14px}
 <input type="file" id="fi" accept=".tar.gz,.gz" hidden>
 <button class="btn btn1" onclick="fi.click()">📁 SELECIONAR SYS</button>
 <button id="go" class="btn btn2" onclick="scan()">🚀 COMEÇAR ANÁLISE</button>
-<div id="bar"><div id="p"></div></div>
-<div id="log" style="font-size:11px;color:#666">Aguardando arquivo...</div>
+<div id="bar"><div id="pr"></div></div>
+<div id="log" style="font-size:11px;color:#666">Aguardando...</div>
 </div>
 </div>
 <div id="res" style="margin-top:12px"></div>
+</div>
 
 <script>
 let file=null,hosts='';
-fi.onchange=e=>{
- file=e.target.files[0];
- if(file){
-  fn.textContent=file.name+' '+(file.size/1024/1024).toFixed(1)+'MB';
-  go.style.display='block';
-  log.textContent='Pronto! Clique em COMEÇAR';
- }
-};
-
+fi.onchange=e=>{file=e.target.files[0];if(file){fn.textContent=file.name+' '+(file.size/1024/1024).toFixed(1)+'MB';go.style.display='block';log.textContent='Pronto!';}};
 async function scan(){
- if(!file) return;
- go.disabled=true; go.textContent='⏳ ANALISANDO...'; res.innerHTML=''; hosts='';
+ if(!file) return; go.disabled=true; hosts=''; res.innerHTML='';
  const reader=file.stream().pipeThrough(new DecompressionStream('gzip')).getReader();
- const dec=new TextDecoder(); let carry=''; let total=0;
- while(true){
-  const {value,done}=await reader.read(); if(done) break;
-  total+=value.length;
-  let chunk=carry+dec.decode(value,{stream:true});
-  let low=chunk.toLowerCase();
-  if(low.includes('private/etc/hosts')){
-   hosts+=low.slice(low.indexOf('private/etc/hosts'), low.indexOf('private/etc/hosts')+7000);
-  }
-  carry=chunk.slice(-300);
-  p.style.width=Math.min(99,total/file.size*100)+'%';
-  if(total>120*1024*1024) break;
- }
- p.style.width='100%';
- let det=[];
- if(hosts.includes('freefire')||hosts.includes('garena')||hosts.includes('anticheat')){
-  det.push('XIT HOSTS - FREE FIRE');
- }else{
-  let c=(hosts.match(/0\.0\.0\.0/g)||[]).length;
-  if(c>20) det.push('XIT HOSTS - '+c+' BLOQUEIOS');
- }
+ const dec=new TextDecoder(); let carry='',total=0;
+ while(true){const{value,done}=await reader.read();if(done)break;total+=value.length;
+ let chunk=carry+dec.decode(value,{stream:true});let low=chunk.toLowerCase();
+ if(low.includes('private/etc/hosts')) hosts+=low.slice(low.indexOf('private/etc/hosts'),low.indexOf('private/etc/hosts')+7000);
+ carry=chunk.slice(-300); pr.style.width=Math.min(99,total/file.size*100)+'%';
+ if(total>120*1024*1024) break;
+ } pr.style.width='100%';
+ let det=[]; if(hosts.includes('freefire')||hosts.includes('garena')||hosts.includes('anticheat')) det.push('XIT HOSTS - FREE FIRE'); else{let c=(hosts.match(/0\.0\.0\.0/g)||[]).length; if(c>20) det.push('XIT HOSTS - '+c+' BLOQUEIOS');}
  let sujo=det.length>0;
- res.innerHTML=`<div style="padding:14px;border-radius:12px;text-align:center;font-weight:900;background:${sujo?'#ff0040':'#00ff88'};color:#000">${sujo?'❌ SUJO':'✅ LIMPO'}</div>`+
- (sujo?det.map(d=>`<div style="background:#111;border:1px solid #222;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #ff0040">❌ ${d}</div>`).join(''):`<div style="background:#111;border:1px solid #222;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #00ff88">✅ APARELHO LIMPO - SEM XIT</div>`);
- log.textContent='Finalizado '+(total/1024/1024).toFixed(1)+'MB';
- go.disabled=false; go.textContent='🚀 COMEÇAR ANÁLISE';
+ res.innerHTML=`<div style="padding:14px;border-radius:12px;text-align:center;font-weight:900;background:${sujo?'#ff0040':'#00ff88'};color:#000">${sujo?'❌ SUJO':'✅ LIMPO'}</div>`+(sujo?det.map(d=>`<div style="background:#111;border:1px solid #222;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #ff0040">❌ ${d}</div>`).join(''):`<div style="background:#111;padding:12px;border-radius:10px;margin-top:8px;border-left:4px solid #00ff88">✅ LIMPO - SEM XIT</div>`);
+ log.textContent='Finalizado '+(total/1024/1024).toFixed(1)+'MB'; go.disabled=false;
 }
 </script>
 </body>
