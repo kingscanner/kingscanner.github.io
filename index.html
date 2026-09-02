@@ -12553,6 +12553,20 @@ loadMe();
 })();
 
 </script>
-<script src="/finance-checkout.js?v=r29-plan-shortcut1"></script>
+   <script>
+// BYPASS - Remove CHAVE/CONTA
+localStorage.setItem('ps_token','BYPASS');
+sessionStorage.setItem('ps_token','BYPASS');
+window.loadMe = async function(){ 
+  document.getElementById('screen-login').style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-upload').classList.add('active');
+  showScreen('upload');
+};
+setTimeout(()=>{ loadMe(); }, 200);
+window.doKeyLogin = ()=>showScreen('upload');
+window.doUserLogin = ()=>showScreen('upload');
+</script>
+<style>#screen-login{display:none!important}#screen-upload{display:flex!important}</style>         <script src="/finance-checkout.js?v=r29-plan-shortcut1"></script>
 </body>
 </html>
