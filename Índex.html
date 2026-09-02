@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>KING V12 PRO</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:monospace;padding:14px}
+#login{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99}
+input{background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:12px;width:100%;max-width:320px;margin:6px}
+.card{background:#0f0f0f;border:1px solid #222;border-radius:18px;padding:16px}
+.box{border:2px dashed #333;border-radius:16px;padding:20px;text-align:center;background:#0a0a0a}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:800;margin-top:10px}
+.btn1{background:#fff;color:#000}.btn2{background:#00ff88;color:#000;display:none}
+#bar{height:8px;background:#222;border-radius:99px;overflow:hidden;margin:12px 0}
+#bar div{height:100%;width:0%;background:#00ff88}
+.item{padding:10px;border-radius:10px;background:#111;border:1px solid #222;margin-top:8px;font-size:12px;border-left:4px solid #333}
+</style>
+</head>
+<body>
+<div id="login">
+<h1>KING V12</h1>
+<input id="u" placeholder="Usuario"><input id="p2" type="password" placeholder="Senha">
+<button class="btn btn1" style="max-width:320px" onclick="if(u.value=='king'&&p2.value=='1234'){login.style.display='none';app.style.display='block'}else alert('login errado')">ENTRAR</button>
+</div>
+<div id="app" style="display:none;max-width:520px;margin:0 auto">
+<h2 style="text-align:center">KING V12 PRO - iOS igual Positivo</h2>
+<div class="card">
+<div class="box">
+<div id="fn" style="color:#00ff88;font-size:11px">Nenhum sysdiagnose</div>
+<input type="file" id="fi" accept=".tar.gz,.gz,.tar,.txt" hidden>
+<button class="btn btn1" onclick="fi.click()">SELECIONAR SYS</button>
+<button id="go" class="btn btn2" onclick="scan()">SCANEAR TUDO</button>
+<div id="bar"><div id="pr"></div></div>
+<div id="log" style="font-size:11px;color:#666">Aguardando...</div>
+</div>
+</div>
+<div id="res" style="margin-top:12px"></div>
+</div>
+<script>
+let file=null;
+fi.onchange=e=>{file=e.target.files[0];if(file){fn.textContent=file.name+' '+(file.size/1024/1024).toFixed(1)+'MB';go.style.display='block';log.textContent='Pronto!';}};
+async function scan(){
+ if(!file) return; go.disabled=true; go.textContent='LENDO...'; res.innerHTML=''; let found=[], total=0, buf='';
+ try{
+  if(file.name.endsWith('.gz') || file.name.includes('.tar')){
+    const reader=file.stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+    const dec=new TextDecoder();
+    while(true){
+     const{value,done}=await reader.read(); if(done) break; total+=value.length;
+     buf+=dec.decode(value,{stream:true}).toLowerCase();
+     if(buf.length>800000) buf=buf.slice(-400000);
+     pr.style.width=Math.min(99,(total/file.size*100))+'%';
+    }
+  } else { buf=(await file.text()).toLowerCase(); total=buf.length; }
+  pr.style.width='100%'; log.textContent='Analisando igual Positivo...';
+  if(buf.includes('com.apple.vpn.managed') || (buf.includes('proxy') && buf.includes('httpproxy'))) found.push('PROXY / VPN MANAGED DETECTADO');
+  if(buf.includes('mcsettings') || buf.includes('mcprofileevents') || buf.includes('com.apple.mdm')) found.push('PERFIL MDM / MCSETTINGS DETECTADO');
+  let jb=['cydia','sileo','zebra','unc0ver','checkra1n','palera1n','dopamine','substitute'].filter(s=>buf.includes(s));
+  if(jb.length>0) found.push('JAILBREAK TRACE: '+jb.slice(0,3).join(', '));
+  if(buf.includes('trollstore')||buf.includes('altstore')||buf.includes('sideload')) found.push('SIDELOAD DETECTADO');
+  if(buf.includes('private/etc/hosts')){ let h=buf.slice(buf.indexOf('private/etc/hosts'), buf.indexOf('private/etc/hosts')+15000); if((h.match(/0\.0\.0\.0/g)||[]).length>20) found.push('XIT HOSTS'); }
+  if(buf.includes('libxiter')||buf.includes('libbypass')||buf.includes('libmodmenu.so')) found.push('LIB DE XIT');
+  if(buf.includes('gameguardian')) found.push('GAME GUARDIAN');
+  let sujo=found.length>0;
+  res.innerHTML=`<div style="padding:16px;border-radius:12px;text-align:center;font-weight:900;font-size:18px;background:${sujo?'#ff0040':'#00ff88'};color:#000">${sujo?'SUJO - '+found.length+' RASTROS':'LIMPO - IGUAL POSITIVO'}</div>`+ (sujo?found.map(f=>`<div class=item style=border-left-color:#ff0040>${f}</div>`).join(''):`<div class=item style=border-left-color:#00ff88>NENHUM RASTRO FORTE</div>`);
+  log.textContent='Finalizado';
+ }catch(err){ log.textContent='Erro: '+err.message; }
+ go.disabled=false; go.textContent='SCANEAR TUDO';
+}
+</script>
+</body>
+</html>
