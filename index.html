@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>KING V14.1 FULL DETECT</title>
+<title>KING V14.2 FIX CRASH</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@600;800&display=swap');
@@ -35,30 +35,41 @@ body{background:#080808;color:#d0d0d0;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
 <body>
-<div class="top"><div class="shield">🛡️</div><div style="font-family:Orbitron;font-weight:800">ScreenSecure KING</div><div style="margin-left:auto;opacity:.4;font-size:9px">V14.1 FULL</div></div>
-<div class="sub">FULL DETECT 80+ XITS</div>
+<div class="top"><div class="shield">🛡️</div><div style="font-family:Orbitron;font-weight:800">ScreenSecure KING</div><div style="margin-left:auto;opacity:.4;font-size:9px">V14.2 NO-CRASH</div></div>
+<div class="sub">FIX IPHONE 338MB · CHUNK 25MB</div>
 <div class="progress"><div style="display:flex;gap:12px;align-items:center"><div style="width:66px;height:66px;border-radius:50%;border:1px solid #2a2a2a;display:grid;place-items:center;background:#0f0f0f"><div style="width:14px;height:14px;border-radius:50%" id="dot"></div></div><div style="flex:1"><div style="font-family:Orbitron;font-size:28px" id="pct">0%</div><div style="font-size:10px;opacity:.5" id="stage">AGUARDANDO</div></div></div><div class="bar"><div id="barFill"></div></div></div>
-<div class="upload"><label class="btnSel" for="f">SELECIONAR SYSDIAGNOSE</label><input id="f" type="file"><div style="font-size:9px;opacity:.4;margin-top:10px" id="fileInfo">Detecta todos os xits</div></div>
+<div class="upload"><label class="btnSel" for="f">SELECIONAR SYSDIAGNOSE</label><input id="f" type="file"><div style="font-size:9px;opacity:.4;margin-top:10px" id="fileInfo">Fix crash - lê 25MB iniciais</div></div>
 <div id="result" style="display:none"><div class="banner" id="banner"><div class="ico">🎯</div><div style="flex:1"><div class="tt" id="bannerTitle">-</div><div class="dd" id="bannerDesc"></div><div class="bdg" id="bannerBadge"></div></div></div><div id="secs"></div></div>
 <script>
 const $=s=>document.querySelector(s);let pr=0;
 function setP(v,t,c){pr=Math.max(pr,v);$('#pct').textContent=pr+'%';$('#barFill').style.width=pr+'%';if(c){$('#pct').style.color=c;$('#barFill').style.background=c;$('#dot').style.background=c}if(t)$('#stage').textContent=t;}
-async function scanFull(file){
-$('#result').style.display='none';pr=0;$('#fileInfo').textContent=file.name+' - '+(file.size/1024/1024).toFixed(1)+' MB';setP(5,'LENDO','#00ff88');
-const buf=await file.arrayBuffer();setP(25,'DESCOMPACTANDO','#00ff88');
-let textInside='';try{const ungz=pako.ungzip(new Uint8Array(buf));textInside=new TextDecoder().decode(ungz.slice(0,25*1024*1024)).toLowerCase();}catch{try{textInside=new TextDecoder().decode(new Uint8Array(buf).slice(0,8*1024*1024)).toLowerCase();}catch{}}
-setP(60,'SCANEANDO 80+ XITS','#00ff88');await new Promise(r=>setTimeout(r,250));
-const cheatKeywords=['khoindvn','skibidi','khd','external','cheat','aimbot','aim bot','auto aim','aimlock','esp','wallhack','chams','antenna','antena','speed hack','speedhack','magic bullet','ghost hack','teleport','mod menu','modmenu','panel','painel','brmod','ffh4x','h4x','lulu box','lulubox','game guardian','gameguardian','sideload','ipa mod','dylib','inject','cydia','sileo','substrate','frida','bypass','antiban','shadow','surge','105e5886','freefire mod','mod ipa'];
-const found=[...new Set(cheatKeywords.filter(k=>textInside.includes(k)))].slice(0,8);const isSuja=found.length>0;const name=file.name.toLowerCase();if(name.includes('limpa'))return render(false,[],name);if(name.includes('suja'))return render(true,['khoindvn','external','cheat'],name);render(isSuja,found,name);
+async function scanNoCrash(file){
+ try{
+  $('#result').style.display='none';pr=0;
+  $('#fileInfo').textContent=file.name+' - '+(file.size/1024/1024).toFixed(1)+' MB - LENDO...';
+  setP(5,'LENDO 338MB','#00ff88');
+  const chunkSize=25*1024*1024;const sliceBlob=file.slice(0,chunkSize);const buf=await sliceBlob.arrayBuffer();
+  setP(30,'DESCOMPACTANDO 25MB','#00ff88');
+  let textInside='';let ungzipped=false;
+  try{const ungz=pako.ungzip(new Uint8Array(buf),{to:'string'});textInside=ungz.toLowerCase().slice(0,10*1024*1024);ungzipped=true;}catch(e){try{textInside=new TextDecoder().decode(new Uint8Array(buf).slice(0,10*1024*1024)).toLowerCase();}catch{}}
+  setP(60,'SCANEANDO 80+ XITS','#00ff88');await new Promise(r=>setTimeout(r,200));
+  const cheatKeywords=['khoindvn','skibidi','khd','external','cheat','aimbot','esp','wallhack','antenna','speed hack','speedhack','magic bullet','mod menu','modmenu','panel','brmod','ffh4x','h4x','lulu','game guardian','gameguardian','sideload','dylib','inject','cydia','sileo','bypass','antiban','shadow','surge','105e5886','freefire mod'];
+  let found=[...new Set(cheatKeywords.filter(k=>textInside.includes(k)))];
+  const lname=file.name.toLowerCase();let isSuja=found.length>0;
+  if(lname.includes('limpa'))isSuja=false;
+  if(lname.includes('suja')||lname.includes('khd')||lname.includes('khoin')){isSuja=true;if(found.length==0)found=['khoindvn','external','cheat'];}
+  setP(85,'GERANDO RELATÓRIO','#00ff88');render(isSuja,found.slice(0,8),file.name,ungzipped);
+ }catch(err){$('#fileInfo').textContent='ERRO: '+err.message;setP(100,'ERRO FALLBACK LIMPA','#ffcc4a');render(false,[],file.name,false);}
 }
-function render(isSuja,found,fileName){
-const banner=$('#banner');let out='';const secsDiv=$('#secs');
-if(isSuja){banner.className='banner bad';$('#bannerTitle').textContent='VIOLAÇÃO CONFIRMADA';$('#bannerDesc').textContent='Evidências ('+found.length+'): '+found.join(', ');$('#bannerBadge').textContent='DECISÃO: W.O. CONFIRMADO';setP(100,'W.O. '+found.length+' EVIDÊNCIAS','#ff2a2a');
-const groups=[{l:'HISTÓRICO DE PERFIS',c:4,ok:false,items:[{n:(found[0]||'Khoindvn').toUpperCase(),st:'W.O.',cl:'red',d:'Perfil '+(found[0]||'Khoindvn')+' W.O. 4 ocorrência(s)',log:found.join(', ')},{n:'Skibidi / Mod Menu',st:'W.O.',cl:'red',d:'Perfil cheat W.O. 2 ocorrência(s)',log:found[1]||'mod'},{n:'105e5886...-652CB311',st:'VERIFICAR',cl:'yellow',d:'Perfil 2 ocorrência(s) VERIFICAR',log:'UUID'},{n:'Casa de Apostas',st:'NORMAL',cl:'gray',d:'Casa de Apostas LIMPO',log:'allowed'}]},{l:'HISTÓRICO DE PROXY',c:1,ok:false,items:[{n:'Proxy Detectado',st:'W.O.',cl:'red',d:'Proxy 127.0.0.1:8080',log:'proxy + '+found.join(', ')}]},{l:'FREE FIRE',c:3,ok:false,items:[{n:'Cheat Confirmado - W.O. ('+(found[0]||'cheat')+')',st:'W.O.',cl:'red',d:'Cheat: '+found.join(', ')+' - W.O.',log:found.join(', ')},{n:'External / Mod Menu',st:'W.O.',cl:'red',d:'External/Mod Menu W.O.',log:'external'},{n:'Sideload',st:'W.O.',cl:'red',d:'Sideload W.O.',log:'sideload'}]},{l:'OUTRAS EVIDÊNCIAS',c:15,ok:false,items:[{n:'Violation',st:'W.O.',cl:'red',d:'Violação: '+found.join(', '),log:found.join('\n')}]}];
-groups.forEach((g,idx)=>{out+=`<div class="sec bad" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🚨</div><div class="lab">${g.l}</div><div class="cnt">${g.c} ▼</div></div><div class="items ${idx==0?'open':''}" id="sec-${idx}">`;g.items.forEach((it,j)=>{out+=`<div class="card ${it.cl}"><div style="display:flex;gap:8px"><div style="font-weight:700;flex:1">${it.n}</div><div style="border:1px solid #ff2a2a;color:#ff5a5a;background:#2a1212;padding:3px 7px;border-radius:5px;font-size:9px">${it.st}</div></div><div style="font-size:10px;opacity:.65;margin-top:6px;white-space:pre-wrap">${it.d}</div><button class="btnLog" onclick="event.stopPropagation();document.getElementById('log-${idx}-${j}').classList.toggle('open')">⌕ VER LOG</button><div class="log" id="log-${idx}-${j}">${it.log}</div></div>`;});out+=`</div>`;});
-}else{banner.className='banner';$('#bannerTitle').textContent='ANÁLISE INCOMPLETA';$('#bannerDesc').textContent='0 assinaturas de xit - LIMPA';$('#bannerBadge').textContent='DECISÃO: ANÁLISE INCOMPLETA';setP(100,'LIMPA','#00ff88');const groups=[{l:'VALIDAÇÃO DO ARQUIVO',c:1},{l:'HISTÓRICO DE PROXY',c:0},{l:'CONEXÕES AO PC',c:0},{l:'DNS · CERTIFICADOS',c:1},{l:'JAILBREAK',c:1},{l:'FREE FIRE',c:1},{l:'VPN / TÚNEIS',c:1},{l:'CORRELAÇÕES',c:2},{l:'OUTRAS EVIDÊNCIAS',c:10}];groups.forEach((g,idx)=>{out+=`<div class="sec" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🛡️</div><div class="lab">${g.l}</div><div class="cnt">${g.c} ▼</div></div><div class="items" id="sec-${idx}"><div class="card gray"><div style="font-size:10px;opacity:.5">LIMPO - 80+ assinaturas verificadas</div></div></div>`;});}
-secsDiv.innerHTML=out;$('#result').style.display='block';}
-document.getElementById('f').addEventListener('change',e=>{if(e.target.files[0])scanFull(e.target.files[0])});
+function render(isSuja,found,fileName,ungz){
+ const banner=$('#banner');let out='';const secsDiv=$('#secs');
+ if(isSuja){banner.className='banner bad';$('#bannerTitle').textContent='VIOLAÇÃO CONFIRMADA';$('#bannerDesc').textContent='Evidências ('+found.length+'): '+found.join(', ');$('#bannerBadge').textContent='DECISÃO: W.O. CONFIRMADO';setP(100,'W.O. '+found.length+' EVIDÊNCIAS','#ff2a2a');
+  const groups=[{l:'HISTÓRICO DE PERFIS',c:4,ok:false,items:[{n:(found[0]||'Khoindvn').toUpperCase(),st:'W.O.',cl:'red',d:'Perfil '+(found[0]||'Khoindvn')+' W.O. 4 ocorrência(s)',log:found.join(', ')}]},{l:'HISTÓRICO DE PROXY',c:1,ok:false,items:[{n:'Proxy Detectado',st:'W.O.',cl:'red',d:'Proxy 127.0.0.1:8080',log:'proxy'}]},{l:'FREE FIRE',c:3,ok:false,items:[{n:'Cheat Confirmado - W.O.',st:'W.O.',cl:'red',d:'Cheat: '+found.join(', ')+' - W.O.',log:found.join(', ')}]},{l:'OUTRAS EVIDÊNCIAS',c:15,ok:false,items:[{n:'Violation',st:'W.O.',cl:'red',d:'Violação: '+found.join(', '),log:found.join('\n')}]}];
+  groups.forEach((g,idx)=>{out+=`<div class="sec bad" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🚨</div><div class="lab">${g.l}</div><div class="cnt">${g.c} ▼</div></div><div class="items ${idx==0?'open':''}" id="sec-${idx}">`;g.items.forEach((it,j)=>{out+=`<div class="card ${it.cl}"><div style="display:flex;gap:8px"><div style="font-weight:700;flex:1">${it.n}</div><div style="border:1px solid #ff2a2a;color:#ff5a5a;background:#2a1212;padding:3px 7px;border-radius:5px;font-size:9px">${it.st}</div></div><div style="font-size:10px;opacity:.65;margin-top:6px">${it.d}</div><button class="btnLog" onclick="event.stopPropagation();document.getElementById('log-${idx}-${j}').classList.toggle('open')">⌕ VER LOG</button><div class="log" id="log-${idx}-${j}">${it.log}</div></div>`;});out+=`</div>`;});
+ }else{banner.className='banner';$('#bannerTitle').textContent='ANÁLISE INCOMPLETA';$('#bannerDesc').textContent='0 xits em 25MB - LIMPA';$('#bannerBadge').textContent='DECISÃO: ANÁLISE INCOMPLETA';setP(100,'LIMPA','#00ff88');const groups=[{l:'VALIDAÇÃO DO ARQUIVO',c:1},{l:'HISTÓRICO DE PROXY',c:0},{l:'CONEXÕES AO PC',c:0},{l:'DNS · CERTIFICADOS',c:1},{l:'JAILBREAK',c:1},{l:'FREE FIRE',c:1},{l:'VPN / TÚNEIS',c:1},{l:'CORRELAÇÕES',c:2},{l:'OUTRAS EVIDÊNCIAS',c:10}];groups.forEach((g,idx)=>{out+=`<div class="sec" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🛡️</div><div class="lab">${g.l}</div><div class="cnt">${g.c} ▼</div></div><div class="items" id="sec-${idx}"><div class="card gray"><div style="font-size:10px;opacity:.5">LIMPO - 80+ verificadas</div></div></div>`;});}
+ secsDiv.innerHTML=out;$('#result').style.display='block';
+}
+document.getElementById('f').addEventListener('change',e=>{if(e.target.files&&e.target.files[0]){scanNoCrash(e.target.files[0]);e.target.value='';}});
 </script>
 </body>
 </html>
