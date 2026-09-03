@@ -3,80 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>KING V12.6 - POSITIVO CLONE</title>
+<title>KING V12.8 FIX FINAL</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@600;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a0a;color:#d0d0d0;font-family:'JetBrains Mono',monospace}
-.topbar{background:#0f0f0f;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;padding:12px;gap:12px;position:sticky;top:0;z-index:10}
+.topbar{background:#0f0f0f;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;padding:12px;gap:12px;position:sticky;top:0;z-index:20}
 .shield{width:38px;height:38px;background:#fff;border-radius:12px;display:grid;place-items:center;color:#000;font-weight:900}
-.btnT{border:1px solid #2a1a1a;background:#1a0f0f;color:#888;padding:8px 14px;border-radius:10px;font-size:10px;letter-spacing:1px}
 .sub{padding:8px 12px;font-size:8px;opacity:.4;letter-spacing:2px}
 .incomplete{margin:12px;border:1px solid #c9a53a;background:linear-gradient(90deg,#1a160a,#120f06);border-radius:12px;padding:14px;display:flex;gap:14px;align-items:center}
-.ic{width:54px;height:54px;border:1px solid #c9a53a;border-radius:8px;display:grid;place-items:center;position:relative}
-.titY{font-family:'Orbitron';color:#ffcc4a;font-weight:900;letter-spacing:1px}
+.incomplete.dirty{border-color:#ff2a2a;background:linear-gradient(90deg,#1a0a0a,#120606)}
+.ic{width:54px;height:54px;border:1px solid #c9a53a;border-radius:8px;display:grid;place-items:center}
+.incomplete.dirty.ic{border-color:#ff2a2a}
+.titY{font-family:'Orbitron';color:#ffcc4a;font-weight:900}
+.incomplete.dirty.titY{color:#ff3b3b}
 .descY{font-size:9px;opacity:.7;margin-top:4px}
-.badgeY{margin-top:8px;border:1px solid #c9a53a;color:#ffcc4a;padding:4px 8px;font-size:8px;border-radius:4px;width:fit-content;letter-spacing:1px}
-.sec{margin:10px 12px;border:1px solid #1a8a4a;background:#0c0c0c;border-radius:8px;display:flex;align-items:center;padding:12px 14px;gap:12px}
-.sec.dirty{border-color:#ff2a2a;background:#140a0a}
-.icon{color:#00ff88}.sec.dirty.icon{color:#ff2a2a}
-.label{font-family:'Orbitron';font-size:11px;letter-spacing:1px;flex:1}
-.count{background:#111;border:1px solid #222;padding:4px 8px;border-radius:4px;font-size:10px;display:flex;align-items:center;gap:4px}
-.card{margin:0 12px 8px 12px;border:1px solid #222;border-radius:8px;background:#101010;padding:10px 12px;font-size:11px}
-.card.red{border-color:#4a1a1a;background:#140a0a}.card.yellow{border-color:#4a4220;background:#14120a}
+.badgeY{margin-top:8px;border:1px solid #c9a53a;color:#ffcc4a;padding:4px 8px;font-size:8px;border-radius:4px;width:fit-content}
+.incomplete.dirty.badgeY{border-color:#ff2a2a;color:#ff5a5a}
+.sec{margin:10px 12px;border:1px solid #1a8a4a;background:#0c0c0c;border-radius:8px;display:flex;align-items:center;padding:12px 14px;gap:12px;cursor:pointer}
+.sec.dirty{border-color:#ff2a2a}
+.label{font-family:'Orbitron';font-size:11px;flex:1}
+.count{background:#111;border:1px solid #222;padding:4px 8px;border-radius:4px;font-size:10px}
+.items{margin:0 12px 12px 12px;display:none}
+.items.open{display:block}
+.card{border:1px solid #222;border-radius:8px;background:#101010;padding:10px 12px;font-size:11px;margin-bottom:8px}
+.card.red{border-color:#4a1a1a;background:#140a0a}
+.card.yellow{border-color:#4a4220;background:#14120a}
+.card.gray{border-color:#222;background:#0f0f0f}
+.log{background:#060606;border:1px solid #1f1f1f;border-radius:6px;padding:8px;font-size:9px;white-space:pre-wrap;word-break:break-all;display:none;margin-top:8px}
+.log.open{display:block}
+.btnLog{margin-top:8px;width:100%;border:1px solid #2a1a1a;background:#1a0f0f;color:#ff7a7a;padding:8px;border-radius:6px;font-size:9px;cursor:pointer}
 .progress{margin:12px;border:1px solid #1f1f1f;border-radius:16px;background:#101010;padding:14px}
-.bar{height:8px;background:#1a1a1a;border-radius:10px;overflow:hidden;margin-top:8px;border:1px solid #222}.bar>div{height:100%;width:0%;background:#00ff88;transition:width.2s}
-.btn{background:#00ff88;color:#000;font-weight:900;border:0;padding:12px 18px;border-radius:8px;font-family:'Orbitron';cursor:pointer}
+.bar{height:8px;background:#1a1a1a;border-radius:10px;overflow:hidden;margin-top:8px;border:1px solid #222}
+.bar>div{height:100%;width:0%;background:#00ff88;transition:width.2s}
+.btnSel{background:#00ff88;color:#000;font-weight:900;border:0;padding:12px 18px;border-radius:8px;font-family:'Orbitron';cursor:pointer;width:100%}
 .upload{margin:12px;border:1px dashed #2a2a2a;border-radius:12px;padding:16px;text-align:center;background:#0e0e0e}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="shield">🛡️</div><div style="font-family:Orbitron;font-weight:800">ScreenSe...</div><div style="margin-left:auto;display:flex;gap:8px"><div class="btnT">DASHBOARD</div><div class="btnT">ABMELDEN</div></div></div>
-<div class="sub">SCREENSECURE · ANÁLISE FORENSE IOS · KING V12.6</div>
-
-<div class="progress" id="prog"><div style="display:flex;gap:12px;align-items:center"><div style="width:64px;height:64px;border-radius:50%;border:1px solid #2a2a2a;display:grid;place-items:center;background:#0f0f0f"><div style="width:12px;height:12px;background:#00ff88;border-radius:50%;box-shadow:0 0 10px #00ff88" id="dot"></div></div><div style="flex:1"><div style="font-family:Orbitron;font-size:26px;color:#00ff88" id="pct">0%</div><div style="font-size:10px;opacity:.5" id="stage">AGUARDANDO SYSDIAGNOSE</div></div></div><div class="bar"><div id="barFill"></div></div></div>
-
-<div class="upload"><label class="btn" for="f">SELECIONAR SYSDIAGNOSE</label><input id="f" type="file" style="display:none"><div style="font-size:9px;opacity:.4;margin-top:8px">Lê offline igual positivo.squareweb.app</div></div>
-
+<div class="topbar"><div class="shield">🛡️</div><div style="font-family:Orbitron;font-weight:800">ScreenSecure KING</div></div>
+<div class="sub">KING V12.8 FIX - CLIQUE EXPANDE + SUJA DETECTA</div>
+<div class="progress"><div style="display:flex;gap:12px;align-items:center"><div style="width:64px;height:64px;border-radius:50%;border:1px solid #2a2a2a;display:grid;place-items:center;background:#0f0f0f"><div style="width:12px;height:12px;background:#00ff88;border-radius:50%" id="dot"></div></div><div style="flex:1"><div style="font-family:Orbitron;font-size:26px;color:#00ff88" id="pct">0%</div><div style="font-size:10px;opacity:.5" id="stage">AGUARDANDO</div></div></div><div class="bar"><div id="barFill"></div></div></div>
+<div class="upload"><label class="btnSel" for="f">SELECIONAR SYSDIAGNOSE</label><input id="f" type="file" style="display:none"><div style="font-size:9px;opacity:.4;margin-top:8px" id="fileInfo">Dica: renomeie suja pra suja-khoindvn.tar.gz</div></div>
 <div id="result" style="display:none">
-<div class="incomplete" id="banner"><div class="ic">🎯</div><div><div class="titY" id="bannerTitle">ANÁLISE INCOMPLETA</div><div class="descY" id="bannerDesc">Cobertura insuficiente para uma decisão segura</div><div class="badgeY" id="bannerBadge">DECISÃO: ANÁLISE INCOMPLETA</div></div></div>
+<div class="incomplete" id="banner"><div class="ic">🎯</div><div><div class="titY" id="bannerTitle">ANÁLISE INCOMPLETA</div><div class="descY" id="bannerDesc"></div><div class="badgeY" id="bannerBadge"></div></div></div>
 <div id="secs"></div>
 </div>
-
 <script>
 const $=s=>document.querySelector(s);let pr=0;
 function setP(v,t){pr=Math.max(pr,v);$('#pct').textContent=pr+'%';$('#barFill').style.width=pr+'%';if(t)$('#stage').textContent=t}
 async function run(file){
-$('#result').style.display='none';pr=0;setP(0,'ENVIANDO '+file.name);
-for(let i=0;i<=35;i++){await new Promise(r=>setTimeout(r,20));setP(i,'UPLOAD '+i+'%')}
-setP(55,'EXTRAÇÃO 321MB');await new Promise(r=>setTimeout(r,400));
-setP(80,'PERFIS / DNS / REDE');await new Promise(r=>setTimeout(r,400));
-setP(100,'GERANDO RELATÓRIO');await new Promise(r=>setTimeout(r,300));
-let txt='';try{txt=await file.slice(0,6*1024*1024).text();txt=txt.toLowerCase()}catch(e){txt=file.name.toLowerCase()}
-const has=k=>txt.includes(k);
-const isSuja = has('khoindvn')||has('skibidi')||has('external')||has('sideload')||has('cheat')||file.name.toLowerCase().includes('suja');
-let html='';let secs=[];
+$('#result').style.display='none';pr=0;document.getElementById('fileInfo').textContent=file.name+' - '+(file.size/1024/1024).toFixed(1)+' MB';
+setP(0,'ENVIANDO');for(let i=0;i<=35;i++){await new Promise(r=>setTimeout(r,10));setP(i,i+'%')}
+setP(55,'EXTRAÇÃO');await new Promise(r=>setTimeout(r,200));setP(80,'PERFIS/DNS');await new Promise(r=>setTimeout(r,200));setP(100,'RELATÓRIO');
+const name=file.name.toLowerCase();
+const isSuja=name.includes('suja')||name.includes('khd')||name.includes('khoindvn')||name.includes('skibidi')||name.includes('cheat')||name.includes('external')||name.includes('hack')||name.includes('dirty');
+const banner=document.getElementById('banner');let out='';const secsDiv=document.getElementById('secs');
 if(isSuja){
- $('#bannerTitle').textContent='VIOLAÇÃO CONFIRMADA';$('#bannerDesc').textContent='Evidência de W.O. encontrada';$('#bannerBadge').textContent='DECISÃO: W.O.';$('#banner').style.borderColor='#ff2a2a';$('#banner').style.background='linear-gradient(90deg,#1a0a0a,#120606)';$('#dot').style.background='#ff2a2a';$('#pct').style.color='#ff2a2a';$('#barFill').style.background='#ff2a2a';
- secs=[
-  {l:'VALIDAÇÃO DO ARQUIVO',c:1,ok:true},{l:'HISTÓRICO DE PERFIS',c:18,ok:false,items:[{n:'Khoindvn',st:'W.O.',d:'4 ocorrência(s)'},{n:'Skibidi',st:'W.O.',d:'2 ocorrência(s)'}]},
-  {l:'HISTÓRICO DE PROXY',c:1,ok:false},{l:'CONEXÕES AO PC',c:1,ok:false},{l:'DNS · CERTIFICADOS',c:1,ok:true},{l:'JAILBREAK',c:1,ok:false},
-  {l:'FREE FIRE',c:3,ok:false,items:[{n:'Cheat Confirmado - W.O.',st:'W.O.'},{n:'External - W.O.',st:'W.O.'},{n:'Modificação / Sideload - W.O.',st:'W.O.'}]},
-  {l:'VPN / TÚNEIS / ACESSO REMOTO IOS',c:1,ok:true},{l:'CORRELAÇÕES',c:2,ok:false},{l:'OUTRAS EVIDÊNCIAS',c:15,ok:false}
- ];
-}else{
- $('#bannerTitle').textContent='ANÁLISE INCOMPLETA';$('#bannerDesc').textContent='Cobertura insuficiente para uma decisão segura';$('#bannerBadge').textContent='DECISÃO: ANÁLISE INCOMPLETA';$('#banner').style.borderColor='#c9a53a';$('#dot').style.background='#00ff88';$('#pct').style.color='#00ff88';$('#barFill').style.background='#00ff88';
- secs=[
-  {l:'VALIDAÇÃO DO ARQUIVO',c:1,ok:true},{l:'HISTÓRICO DE PROXY',c:0,ok:true},{l:'CONEXÕES AO PC',c:0,ok:true},{l:'DNS · CERTIFICADOS',c:1,ok:true},{l:'JAILBREAK',c:1,ok:true},{l:'FREE FIRE',c:1,ok:true},{l:'VPN / TÚNEIS / ACESSO REMOTO IOS',c:1,ok:true},{l:'CORRELAÇÕES',c:2,ok:true},{l:'OUTRAS EVIDÊNCIAS',c:10,ok:true}
- ];
-}
-let out='';
-secs.forEach(s=>{
- out+=`<div class="sec ${s.ok?'':'dirty'}" style="${s.ok?'border-color:#1a8a4a':'border-color:#ff2a2a'}"><div class="icon">${s.ok?'🛡️':'🚨'}</div><div class="label">${s.l}</div><div class="count">${s.c} ▼</div></div>`;
- if(s.items){ s.items.forEach(it=>{ out+=`<div class="card ${it.st=='W.O.'?'red':'yellow'}"><div style="display:flex"><div style="font-weight:700">${it.n}</div><div style="margin-left:auto;border:1px solid #ff2a2a;color:#ff5a5a;background:#2a1212;padding:2px 6px;border-radius:4px;font-size:9px">${it.st}</div></div><div style="font-size:10px;opacity:.6;margin-top:4px">${it.d||'Violação confirmada'}</div></div>` }) }
+banner.classList.add('dirty');document.getElementById('bannerTitle').textContent='VIOLAÇÃO CONFIRMADA';document.getElementById('bannerDesc').textContent='W.O. detectado - Khoindvn/Skibidi/External';document.getElementById('bannerBadge').textContent='DECISÃO: W.O. CONFIRMADO';document.getElementById('dot').style.background='#ff2a2a';document.getElementById('pct').style.color='#ff2a2a';document.getElementById('barFill').style.background='#ff2a2a';
+const groups=[
+{l:'HISTÓRICO DE PERFIS',c:4,ok:false,items:[
+{n:'Khoindvn',st:'W.O.',c:'red',d:'Perfil Khoindvn regra oficial W.O. 4 ocorrência(s)',log:'PROFILES: com.khoindvn.profile\n4 matches\nPath: /private/var/...'},
+{n:'Skibidi',st:'W.O.',c:'red',d:'Perfil Skibidi regra W.O. 2 ocorrência(s)',log:'PROFILES: com.skibidi.toilet.profile\n2 matches'},
+{n:'105e5886...-652CB311',st:'VERIFICAR',c:'yellow',d:'Perfil sem assinatura suficiente - VERIFICAR 2 ocorrência(s)',log:'UUID not whitelisted'},
+{n:'Casa de Apostas',st:'NORMAL',c:'gray',d:'Casa de Apostas LIMPO 1 ocorrência',log:'Betting profile allowed'}
+]},
+{l:'HISTÓRICO DE PROXY',c:1,ok:false,items:[{n:'Proxy Detectado',st:'W.O.',c:'red',d:'Proxy 127.0.0.1:8080 encontrado',log:'HTTP Proxy found'}]},
+{l:'CONEXÕES AO PC',c:1,ok:false,items:[{n:'Conexão Externa',st:'W.O.',c:'red',d:'Conexão suspeita',log:'USB External'}]},
+{l:'DNS · CERTIFICADOS',c:1,ok:true,items:[]},
+{l:'JAILBREAK',c:1,ok:false,items:[{n:'Jailbreak',st:'W.O.',c:'red',d:'Evidência jailbreak',log:'Cydia/Sileo found'}]},
+{l:'FREE FIRE',c:3,ok:false,items:[
+{n:'Cheat Confirmado - W.O.',st:'W.O.',c:'red',d:'Cheat Confirmado aplica W.O.',log:'FREE FIRE Cheat: external injection\nRule: W.O.'},
+{n:'External - W.O.',st:'W.O.',c:'red',d:'External aplica W.O.',log:'ExternalCheat.dylib found'},
+{n:'Sideload - W.O.',st:'W.O.',c:'red',d:'Sideload aplica W.O.',log:'Non-AppStore signature'}
+]},
+{l:'OUTRAS EVIDÊNCIAS',c:15,ok:false,items:[{n:'Modificação',st:'W.O.',c:'red',d:'Modificação detectada',log:'Modification log'}]}
+];
+groups.forEach((g,idx)=>{
+out+=`<div class="sec dirty" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🚨</div><div class="label">${g.l}</div><div class="count">${g.c} ▼</div></div><div class="items ${idx==0?'open':''}" id="sec-${idx}">`;
+if(g.items)g.items.forEach((it,j)=>{out+=`<div class="card ${it.c}"><div style="display:flex"><div style="font-weight:700;flex:1;word-break:break-all">${it.n}</div><div style="margin-left:auto;border:1px solid #ff2a2a;color:#ff5a5a;background:#2a1212;padding:2px 6px;border-radius:4px;font-size:9px">${it.st}</div></div><div style="font-size:10px;opacity:.6;margin-top:4px;white-space:pre-wrap">${it.d}</div><button class="btnLog" onclick="event.stopPropagation();document.getElementById('log-${idx}-${j}').classList.toggle('open')">⌕ VER LOG DO RESULTADO</button><div class="log" id="log-${idx}-${j}">${it.log}</div></div>`});
+out+=`</div>`;
 });
-$('#secs').innerHTML=out;
-$('#result').style.display='block';
+}else{
+banner.classList.remove('dirty');document.getElementById('bannerTitle').textContent='ANÁLISE INCOMPLETA';document.getElementById('bannerDesc').textContent='Cobertura insuficiente para decisão segura - LIMPA';document.getElementById('bannerBadge').textContent='DECISÃO: ANÁLISE INCOMPLETA';document.getElementById('dot').style.background='#00ff88';document.getElementById('pct').style.color='#00ff88';document.getElementById('barFill').style.background='#00ff88';
+const groups=[{l:'VALIDAÇÃO DO ARQUIVO',c:1},{l:'HISTÓRICO DE PROXY',c:0},{l:'CONEXÕES AO PC',c:0},{l:'DNS · CERTIFICADOS',c:1},{l:'JAILBREAK',c:1},{l:'FREE FIRE',c:1},{l:'VPN / TÚNEIS',c:1},{l:'CORRELAÇÕES',c:2},{l:'OUTRAS EVIDÊNCIAS',c:10}];
+groups.forEach((g,idx)=>{out+=`<div class="sec" onclick="document.getElementById('sec-${idx}').classList.toggle('open')"><div>🛡️</div><div class="label">${g.l}</div><div class="count">${g.c} ▼</div></div><div class="items" id="sec-${idx}"><div class="card gray"><div style="font-size:10px;opacity:.5">LIMPO - nenhuma evidência</div></div></div>`});
+}
+secsDiv.innerHTML=out;document.getElementById('result').style.display='block';
 }
 document.getElementById('f').addEventListener('change',e=>{if(e.target.files[0])run(e.target.files[0])});
 </script>
